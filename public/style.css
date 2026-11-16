@@ -161,3 +161,23 @@ textarea {
 .pagination {
     font-size: 14px;
 }
+
+button.delete {
+    color: #8b2626;
+}
+
+.role-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+}
+
+.role-form label {
+    margin: 0;
+}
+
+.role-form select {
+    width: auto;
+    max-width: 100%;
+}

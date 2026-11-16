@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -14,10 +15,9 @@ class DatabaseSeeder extends Seeder
         $study = Category::firstOrCreate(['name' => 'Учёба']);
         $sport = Category::firstOrCreate(['name' => 'Спорт']);
 
-        $reporter = User::firstOrCreate(
-            ['login' => 'reporter'],
-            ['password' => Hash::make('reporter123')]
-        );
+        $this->demoUser('reader', 'reader123', 'reader');
+        $reporter = $this->demoUser('reporter', 'reporter123', 'journalist');
+        $this->demoUser('admin', 'admin123', 'admin');
 
         $news = [
             ['Тренировка по баскетболу пройдёт в пятницу', 'Спортзал будет открыт с четырёх часов. С собой нужно взять сменную обувь.', $sport->id],
@@ -40,5 +40,18 @@ class DatabaseSeeder extends Seeder
                 $article->save();
             }
         }
+    }
+
+    private function demoUser(string $login, string $password, string $roleName): User
+    {
+        $user = User::firstOrNew(['login' => $login]);
+
+        if (! $user->exists) {
+            $user->password = Hash::make($password);
+            $user->role()->associate(Role::where('name', $roleName)->firstOrFail());
+            $user->save();
+        }
+
+        return $user;
     }
 }

@@ -5,13 +5,20 @@
         <nav aria-label="Разделы сайта">
             <a href="{{ route('home') }}" @if(request()->routeIs('home')) aria-current="page" @endif>Главная</a>
             <a href="{{ route('category') }}" @if(request()->routeIs('category')) aria-current="page" @endif>Категория</a>
-            <a href="{{ route('journalist') }}" @if(request()->routeIs('journalist', 'journalist.*')) aria-current="page" @endif>Журналист</a>
-            <a href="{{ route('admin') }}" @if(request()->routeIs('admin', 'admin.*')) aria-current="page" @endif>Админ</a>
+            @auth
+                @php($role = auth()->user()->role)
+                @if (in_array($role->name, ['journalist', 'admin'], true))
+                    <a href="{{ route('journalist') }}" @if(request()->routeIs('journalist', 'journalist.*')) aria-current="page" @endif>Журналист</a>
+                @endif
+                @if ($role->name === 'admin')
+                    <a href="{{ route('admin') }}" @if(request()->routeIs('admin', 'admin.*')) aria-current="page" @endif>Админ</a>
+                @endif
+            @endauth
         </nav>
 
         <div class="account">
             @auth
-                <span>{{ auth()->user()->login }}</span>
+                <span>{{ auth()->user()->login }} · {{ $role->label() }}</span>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
                     <button type="submit">Выйти</button>

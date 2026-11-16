@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\JournalistController;
 use App\Http\Controllers\NewsController;
-use App\Models\Text;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [NewsController::class, 'index'])->name('home');
@@ -17,15 +17,20 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 
-Route::middleware('auth')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
-    Route::get('/journalist', [JournalistController::class, 'index'])->name('journalist');
-    Route::post('/journalist', [JournalistController::class, 'store'])->name('journalist.store');
-    Route::get('/journalist/{article}/edit', [JournalistController::class, 'edit'])->name('journalist.edit');
-    Route::put('/journalist/{article}', [JournalistController::class, 'update'])->name('journalist.update');
+Route::middleware(['auth', 'role:journalist,admin'])->prefix('journalist')->group(function () {
+    Route::get('/', [JournalistController::class, 'index'])->name('journalist');
+    Route::post('/', [JournalistController::class, 'store'])->name('journalist.store');
+    Route::get('/{article}/edit', [JournalistController::class, 'edit'])->name('journalist.edit');
+    Route::put('/{article}', [JournalistController::class, 'update'])->name('journalist.update');
 });
 
-Route::get('/admin', function () {
-    return view('admin', ['news' => Text::latest()->get()]);
-})->name('admin');
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+    Route::get('/', [AdminController::class, 'index'])->name('admin');
+    Route::get('/articles/{article}/edit', [JournalistController::class, 'edit'])->name('admin.edit');
+    Route::put('/articles/{article}', [JournalistController::class, 'update'])->name('admin.update');
+    Route::patch('/articles/{article}/block', [AdminController::class, 'block'])->name('admin.block');
+    Route::delete('/articles/{article}', [AdminController::class, 'destroy'])->name('admin.destroy');
+    Route::patch('/users/{user}/role', [AdminController::class, 'changeRole'])->name('admin.role');
+});

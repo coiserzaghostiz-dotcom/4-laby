@@ -3,34 +3,61 @@
 
     <main class="wrap">
         <h1>Админ</h1>
+        <x-messages />
 
         <section class="box">
             <h2>Статьи</h2>
-            @foreach ($news as $item)
+            @forelse ($news as $article)
                 <div class="row">
-                    <p>{{ $item->heading }}</p>
+                    <p><strong>{{ $article->heading }}</strong></p>
+                    <p class="details">
+                        {{ $article->category->name }} · {{ $article->author->login }}
+                        · {{ $article->blocked ? 'Заблокирована' : 'Опубликована' }}
+                    </p>
                     <div class="actions">
-                        <button type="button" disabled>Редактировать</button>
-                        <button type="button" disabled>Заблокировать</button>
-                        <button type="button" disabled>Удалить</button>
+                        <a href="{{ route('admin.edit', $article) }}">Редактировать</a>
+
+                        <form action="{{ route('admin.block', $article) }}" method="post">
+                            @csrf
+                            @method('PATCH')
+                            <input type="hidden" name="blocked" value="{{ $article->blocked ? 0 : 1 }}">
+                            <button type="submit" class="secondary">{{ $article->blocked ? 'Разблокировать' : 'Заблокировать' }}</button>
+                        </form>
+
+                        <form action="{{ route('admin.destroy', $article) }}" method="post" onsubmit="return confirm('Удалить статью?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="secondary delete">Удалить</button>
+                        </form>
                     </div>
                 </div>
-            @endforeach
+            @empty
+                <p>Статей пока нет.</p>
+            @endforelse
         </section>
 
         <section class="box">
             <h2>Роли пользователей</h2>
-            <form class="stack">
-                <label for="login">Пользователь</label>
-                <select id="login" name="login"><option>reporter</option></select>
-                <label for="role">Новая роль</label>
-                <select id="role" name="role">
-                    <option>Читатель</option>
-                    <option>Журналист</option>
-                    <option>Администратор</option>
-                </select>
-                <button type="button" disabled>Сохранить роль</button>
-            </form>
+
+            @foreach ($users as $user)
+                <div class="row">
+                    @if ($user->id === auth()->id())
+                        <p><strong>{{ $user->login }}</strong> · {{ $user->role->label() }} (твой аккаунт)</p>
+                    @else
+                        <form class="role-form" action="{{ route('admin.role', $user) }}" method="post">
+                            @csrf
+                            @method('PATCH')
+                            <label for="role-{{ $user->id }}">{{ $user->login }}</label>
+                            <select id="role-{{ $user->id }}" name="role_id" required>
+                                @foreach ($roles as $role)
+                                    <option value="{{ $role->id }}" @selected($user->role_id === $role->id)>{{ $role->label() }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit">Сохранить роль</button>
+                        </form>
+                    @endif
+                </div>
+            @endforeach
         </section>
     </main>
 

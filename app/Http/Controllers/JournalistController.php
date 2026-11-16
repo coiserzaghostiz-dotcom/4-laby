@@ -27,21 +27,24 @@ class JournalistController extends Controller
 
     public function edit(Request $request, Text $article)
     {
-        abort_unless($article->user_id === $request->user()->id, 403);
+        $fromAdmin = $request->routeIs('admin.*');
+        abort_unless($fromAdmin || $article->user_id === $request->user()->id, 403);
 
         return view('edit', [
             'article' => $article,
             'categories' => Category::orderBy('name')->get(),
+            'fromAdmin' => $fromAdmin,
         ]);
     }
 
     public function update(Request $request, Text $article)
     {
-        abort_unless($article->user_id === $request->user()->id, 403);
+        $fromAdmin = $request->routeIs('admin.*');
+        abort_unless($fromAdmin || $article->user_id === $request->user()->id, 403);
 
         $article->update($this->articleData($request));
 
-        return redirect()->route('journalist')->with('message', 'Статья сохранена.');
+        return redirect()->route($fromAdmin ? 'admin' : 'journalist')->with('message', 'Статья сохранена.');
     }
 
     private function articleData(Request $request): array

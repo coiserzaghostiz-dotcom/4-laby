@@ -9,6 +9,8 @@ class Text extends Model
 {
     protected $fillable = ['heading', 'category_id', 'text'];
 
+    protected $casts = ['blocked' => 'boolean'];
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
