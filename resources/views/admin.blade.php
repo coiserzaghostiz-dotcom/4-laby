@@ -8,7 +8,7 @@
             <h2>Статьи</h2>
             @foreach ($news as $item)
                 <div class="row">
-                    <p>{{ $item['heading'] }}</p>
+                    <p>{{ $item->heading }}</p>
                     <div class="actions">
                         <button type="button" disabled>Редактировать</button>
                         <button type="button" disabled>Заблокировать</button>

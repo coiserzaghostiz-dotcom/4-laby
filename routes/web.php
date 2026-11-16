@@ -1,25 +1,31 @@
 <?php
 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\JournalistController;
+use App\Http\Controllers\NewsController;
+use App\Models\Text;
 use Illuminate\Support\Facades\Route;
 
-$news = [
-    ['heading' => 'В библиотеке сделали место для занятий', 'category' => 'Учёба', 'text' => 'На втором этаже поставили столы и добавили розетки. Место работает по расписанию библиотеки.'],
-    ['heading' => 'Открылась запись в команду по волейболу', 'category' => 'Спорт', 'text' => 'Записаться можно у преподавателя физкультуры после пары.'],
-    ['heading' => 'Первокурсники показали свои первые сайты', 'category' => 'Учёба', 'text' => 'На паре по веб-разработке ребята представили небольшие сайты на HTML и CSS.'],
-];
+Route::get('/', [NewsController::class, 'index'])->name('home');
+Route::get('/category/{category?}', [NewsController::class, 'category'])->name('category');
+Route::get('/article/{article}', [NewsController::class, 'show'])->name('article.show');
 
-Route::get('/', function () use ($news) {
-    return view('feed', ['title' => 'Все новости', 'news' => $news]);
-})->name('home');
+Route::middleware('guest')->group(function () {
+    Route::view('/login', 'login')->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:20,1');
+    Route::view('/register', 'register')->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
+});
 
-Route::get('/category', function () use ($news) {
-    $studyNews = array_filter($news, fn ($item) => $item['category'] === 'Учёба');
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    return view('feed', ['title' => 'Учёба', 'news' => $studyNews]);
-})->name('category');
+    Route::get('/journalist', [JournalistController::class, 'index'])->name('journalist');
+    Route::post('/journalist', [JournalistController::class, 'store'])->name('journalist.store');
+    Route::get('/journalist/{article}/edit', [JournalistController::class, 'edit'])->name('journalist.edit');
+    Route::put('/journalist/{article}', [JournalistController::class, 'update'])->name('journalist.update');
+});
 
-Route::view('/journalist', 'journalist')->name('journalist');
-
-Route::get('/admin', function () use ($news) {
-    return view('admin', ['news' => $news]);
+Route::get('/admin', function () {
+    return view('admin', ['news' => Text::latest()->get()]);
 })->name('admin');

@@ -128,3 +128,36 @@ textarea {
 .row .actions {
     margin-top: 5px;
 }
+
+.account {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    margin-top: 6px;
+    font-size: 14px;
+}
+
+.account button {
+    padding: 2px 5px;
+}
+
+.message {
+    color: #245828;
+}
+
+.errors {
+    color: #9c2727;
+}
+
+.category-list {
+    margin-top: 14px;
+}
+
+.article-body {
+    white-space: pre-wrap;
+}
+
+.pagination {
+    font-size: 14px;
+}
